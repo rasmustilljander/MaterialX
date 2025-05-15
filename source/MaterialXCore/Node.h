@@ -496,6 +496,12 @@ class MX_CORE_API Backdrop : public Element
     static const string HEIGHT_ATTRIBUTE;
 };
 
+/// Set the element's name string.  The name of a MaterialX element must be
+/// unique among all elements at the same scope.
+/// @throws Exception if an element at the same scope already possesses the
+///    given name. // TODO ratil
+MX_CORE_API void renameElement(ElementPtr element, const std::string& newName, bool updateReferences=false);
+
 MATERIALX_NAMESPACE_END
 
 #endif

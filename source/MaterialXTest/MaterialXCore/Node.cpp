@@ -778,13 +778,13 @@ TEST_CASE("Node Definition Creation", "[nodedef]")
     REQUIRE(doc->validate());
 }
 
-TEST_CASE("renameElement with connections", "[Node, Node Graph]")
+TEST_CASE("renameElement with connections", "[node, nodegraph]")
 {
     mx::DocumentPtr doc = mx::createDocument();
 
     const std::string type = "float";
     const std::string new_name = "new_name";
-    SECTION("Node")
+    SECTION("node")
     {
         // Upstream -> Downstream
         SECTION("Node within NodeGraph -> NodeGraph output")
@@ -863,7 +863,7 @@ TEST_CASE("renameElement with connections", "[Node, Node Graph]")
             REQUIRE(downstreamOutput->getNodeName() == new_name);
         }
     }
-    SECTION("Node Graph")
+    SECTION("nodegraph")
     {
         mx::NodeGraphPtr upstreamGraph = doc->addNodeGraph();
         mx::NodePtr upstreamGraphNode = upstreamGraph->addNode("constant", "upstreamNode", type);
@@ -895,7 +895,7 @@ TEST_CASE("renameElement with connections", "[Node, Node Graph]")
     }
 }
 
-TEST_CASE("renameElement with no connections", "[Element]")
+TEST_CASE("renameElement with no connections", "[element, document]")
 {
     mx::DocumentPtr doc = mx::createDocument();
     mx::ElementPtr child = doc->addMaterialNode("name1");

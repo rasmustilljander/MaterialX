@@ -20,6 +20,26 @@ const string Backdrop::HEIGHT_ATTRIBUTE = "height";
 // Node methods
 //
 
+void Node::setName(const std::string& name, bool updateReferences)
+{
+    if (!updateReferences)
+    {
+        Element::setName(name);
+        return;
+    }
+    if (name.empty() || getName() == name)
+    {
+        return;
+    }
+    std::string validName = getParent()->createValidChildName(name);
+    vector<PortElementPtr> downStreamPorts = getDownstreamPorts();
+    for (PortElementPtr& port : downStreamPorts)
+    {
+        port->setNodeName(validName);
+    }
+    setName(validName);
+}
+
 void Node::setConnectedNode(const string& inputName, ConstNodePtr node)
 {
     InputPtr input = getInput(inputName);
@@ -560,6 +580,26 @@ string GraphElement::asStringDot() const
 // NodeGraph methods
 //
 
+void NodeGraph::setName(const std::string& name, bool updateReferences)
+{
+    if (!updateReferences)
+    {
+        Element::setName(name);
+        return;
+    }
+    if (name.empty() || getName() == name)
+    {
+        return;
+    }
+    std::string validName = getParent()->createValidChildName(name);
+    vector<PortElementPtr> downStreamPorts = getDownstreamPorts();
+    for (PortElementPtr& port : downStreamPorts)
+    {
+        port->setNodeGraphString(validName);
+    }
+    setName(validName);
+}
+
 vector<OutputPtr> NodeGraph::getMaterialOutputs() const
 {
     vector<OutputPtr> materialOutputs;
@@ -835,52 +875,6 @@ bool Backdrop::validate(string* message) const
         validateRequire(stringVec.size() == elemVec.size(), res, message, "Invalid element in contains string");
     }
     return Element::validate(message) && res;
-}
-
-void renameElement(ElementPtr element, const std::string& newName, bool updateReferences)
-{
-    if (!element)
-    {
-        return;
-    }
-    if (!updateReferences || !(element->isA<Node>() || element->isA<NodeGraph>()))
-    {
-        element->setName(newName);
-        return;
-    }
-    if (newName.empty() || element->getName() == newName)
-    {
-        return;
-    }
-    ElementPtr parentElem = element->getParent();
-    if (!parentElem)
-    {
-        element->setName(newName);
-        return;
-    }
-
-    std::string validName = parentElem->createValidChildName(newName);
-    vector<PortElementPtr> downStreamPorts;
-    if (auto elemAsNode = element->asA<MaterialX::Node>())
-    {
-        downStreamPorts = elemAsNode->getDownstreamPorts();
-    }
-    else if (auto elemAsNodeGraph = element->asA<NodeGraph>())
-    {
-        downStreamPorts = elemAsNodeGraph->getDownstreamPorts();
-    }
-    for (PortElementPtr& port : downStreamPorts)
-    {
-        if (port->hasAttribute(PortElement::NODE_NAME_ATTRIBUTE))
-        {
-            port->setNodeName(validName);
-        }
-        else if (port->hasAttribute(PortElement::NODE_GRAPH_ATTRIBUTE))
-        {
-            port->setAttribute(PortElement::NODE_GRAPH_ATTRIBUTE, validName);
-        }
-    }
-    element->setName(validName);
 }
 
 MATERIALX_NAMESPACE_END

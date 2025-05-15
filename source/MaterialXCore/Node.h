@@ -58,6 +58,16 @@ class MX_CORE_API Node : public InterfaceElement
     }
     virtual ~Node() { }
 
+    /// @name Name
+    /// @{
+
+    /// Set the element's name string.  The name of a MaterialX element must be
+    /// unique among all elements at the same scope. Optionally updates downstream ports.
+    /// @throws Exception if an element at the same scope already possesses the
+    ///    given name.
+    void setName(const std::string& name, bool updateReferences = false);
+
+    /// @}
     /// @name Connections
     /// @{
 
@@ -327,6 +337,13 @@ class MX_CORE_API NodeGraph : public GraphElement
     }
     virtual ~NodeGraph() { }
 
+    /// Set the element's name string.  The name of a MaterialX element must be
+    /// unique among all elements at the same scope. Optionally updates downstream ports.
+    /// @throws Exception if an element at the same scope already possesses the
+    ///    given name.
+    void setName(const std::string& name, bool updateReferences = false);
+
+    /// @}
     /// @name Material References
     /// @{
 
@@ -495,14 +512,6 @@ class MX_CORE_API Backdrop : public Element
     static const string WIDTH_ATTRIBUTE;
     static const string HEIGHT_ATTRIBUTE;
 };
-
-/// Renames an element and optionally updates downstream port references. If updateReferences
-/// is false this behaves exactly like Element::setName for all types. Downstream ports are only
-/// considered if given element is of type Node/NodeGraph.
-/// @param element           The element to rename.
-/// @param newName           The desired new name; will be sanitized to a valid child name.
-/// @param updateReferences  If true, update downstream port references; otherwise only rename.
-MX_CORE_API void renameElement(ElementPtr element, const std::string& newName, bool updateReferences = false);
 
 MATERIALX_NAMESPACE_END
 

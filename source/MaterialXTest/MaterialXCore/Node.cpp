@@ -797,7 +797,7 @@ TEST_CASE("renameElement with connections", "[node, nodegraph]")
             mx::PortElementPtr downstreamOutput = parentGraph->addOutput("out", type);
             downstreamOutput->setNodeName(upstreamNode->getName());
 
-            renameElement(upstreamNode, new_name, true);
+            upstreamNode->setName(new_name, true);
             REQUIRE(upstreamNode->getName() == new_name);
             REQUIRE(downstreamOutput->getNodeName() == new_name);
         }
@@ -813,13 +813,13 @@ TEST_CASE("renameElement with connections", "[node, nodegraph]")
                 downstreamInput->setNodeName(upstreamNode->getName());
                 SECTION("Update references")
                 {
-                    renameElement(upstreamNode, new_name, true);
+                    upstreamNode->setName(new_name, true);
                     REQUIRE(upstreamNode->getName() == new_name);
                     REQUIRE(downstreamInput->getNodeName() == new_name);
                 }
                 SECTION("Do not update references")
                 {
-                    renameElement(upstreamNode, new_name, false);
+                    upstreamNode->setName(new_name, false);
                     REQUIRE(upstreamNode->getName() == new_name);
                     REQUIRE(downstreamInput->getNodeName() != new_name);
                 }
@@ -833,7 +833,7 @@ TEST_CASE("renameElement with connections", "[node, nodegraph]")
                 mx::InputPtr downstreamInput = downstreamGraph->addInput("input", type);
                 downstreamInput->setNodeName(upstreamNode->getName());
 
-                renameElement(upstreamNode, new_name, true);
+                upstreamNode->setName(new_name, true);
                 REQUIRE(upstreamNode->getName() == new_name);
                 REQUIRE(downstreamInput->getNodeName() == new_name);
             }
@@ -858,7 +858,7 @@ TEST_CASE("renameElement with connections", "[node, nodegraph]")
             mx::OutputPtr downstreamOutput = functionalNodeGraph->getOutput(compoundNodeGraphOutput->getName());
             REQUIRE(downstreamOutput);
 
-            renameElement(upstreamNode, new_name, true);
+            upstreamNode->setName(new_name, true);
             REQUIRE(upstreamNode->getName() == new_name);
             REQUIRE(downstreamOutput->getNodeName() == new_name);
         }
@@ -877,7 +877,7 @@ TEST_CASE("renameElement with connections", "[node, nodegraph]")
             downstreamInput->setNodeGraphString(upstreamGraph->getName());
             downstreamInput->setOutputString(upstreamGraphOutput->getName());
 
-            renameElement(upstreamGraph, new_name, true);
+            upstreamGraph->setName(new_name, true);
             REQUIRE(upstreamGraph->getName() == new_name);
             REQUIRE(downstreamInput->getNodeGraphString() == new_name);
         }
@@ -888,22 +888,9 @@ TEST_CASE("renameElement with connections", "[node, nodegraph]")
             downstreamInput->setNodeGraphString(upstreamGraph->getName());
             downstreamInput->setOutputString(upstreamGraphOutput->getName());
 
-            renameElement(upstreamGraph, new_name, true);
+            upstreamGraph->setName(new_name, true);
             REQUIRE(upstreamGraph->getName() == new_name);
             REQUIRE(downstreamInput->getNodeGraphString() == new_name);
         }
     }
-}
-
-TEST_CASE("renameElement with no connections", "[element, document]")
-{
-    mx::DocumentPtr doc = mx::createDocument();
-    mx::ElementPtr child = doc->addMaterialNode("name1");
-    const std::string new_name = "new_name";
-    renameElement(child, new_name, true);
-    REQUIRE(doc->validate());
-    REQUIRE(child->getName() == new_name);
-
-    renameElement(doc, new_name, true);
-    REQUIRE(doc->getName() == new_name);
 }

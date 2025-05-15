@@ -496,11 +496,13 @@ class MX_CORE_API Backdrop : public Element
     static const string HEIGHT_ATTRIBUTE;
 };
 
-/// Set the element's name string.  The name of a MaterialX element must be
-/// unique among all elements at the same scope.
-/// @throws Exception if an element at the same scope already possesses the
-///    given name. // TODO ratil
-MX_CORE_API void renameElement(ElementPtr element, const std::string& newName, bool updateReferences=false);
+/// Renames an element and optionally updates downstream port references. If updateReferences
+/// is false this behaves exactly like Element::setName for all types. Downstream ports are only
+/// considered if given element is of type Node/NodeGraph.
+/// @param element           The element to rename.
+/// @param newName           The desired new name; will be sanitized to a valid child name.
+/// @param updateReferences  If true, update downstream port references; otherwise only rename.
+MX_CORE_API void renameElement(ElementPtr element, const std::string& newName, bool updateReferences = false);
 
 MATERIALX_NAMESPACE_END
 

@@ -839,47 +839,45 @@ bool Backdrop::validate(string* message) const
 
 void renameElement(ElementPtr element, const std::string& newName, bool updateReferences)
 {
-    if (!element || newName.empty())
+    if (!element)
     {
         return;
     }
-    if (element->getName() == newName)
-    {
-        return;
-    }
-    if (!(element->isA<Node>() || element->isA<NodeGraph>()))
+    if (!updateReferences || !(element->isA<Node>() || element->isA<NodeGraph>()))
     {
         element->setName(newName);
+        return;
     }
-
+    if (newName.empty() || element->getName() == newName)
+    {
+        return;
+    }
     ElementPtr parentElem = element->getParent();
     if (!parentElem)
     {
+        element->setName(newName);
         return;
     }
 
     std::string validName = parentElem->createValidChildName(newName);
-    if (updateReferences)
+    vector<PortElementPtr> downStreamPorts;
+    if (auto elemAsNode = element->asA<MaterialX::Node>())
     {
-        vector<PortElementPtr> downStreamPorts;
-        if (auto elemAsNode = element->asA<MaterialX::Node>())
+        downStreamPorts = elemAsNode->getDownstreamPorts();
+    }
+    else if (auto elemAsNodeGraph = element->asA<NodeGraph>())
+    {
+        downStreamPorts = elemAsNodeGraph->getDownstreamPorts();
+    }
+    for (PortElementPtr& port : downStreamPorts)
+    {
+        if (port->hasAttribute(PortElement::NODE_NAME_ATTRIBUTE))
         {
-            downStreamPorts = elemAsNode->getDownstreamPorts();
+            port->setNodeName(validName);
         }
-        else if (auto elemAsNodeGraph = element->asA<NodeGraph>())
+        else if (port->hasAttribute(PortElement::NODE_GRAPH_ATTRIBUTE))
         {
-            downStreamPorts = elemAsNodeGraph->getDownstreamPorts();
-        }
-        for (PortElementPtr& port : downStreamPorts)
-        {
-            if (port->hasAttribute(PortElement::NODE_NAME_ATTRIBUTE))
-            {
-                port->setNodeName(validName);
-            }
-            else if (port->hasAttribute(PortElement::NODE_GRAPH_ATTRIBUTE))
-            {
-                port->setAttribute(PortElement::NODE_GRAPH_ATTRIBUTE, validName);
-            }
+            port->setAttribute(PortElement::NODE_GRAPH_ATTRIBUTE, validName);
         }
     }
     element->setName(validName);

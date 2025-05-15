@@ -778,7 +778,7 @@ TEST_CASE("Node Definition Creation", "[nodedef]")
     REQUIRE(doc->validate());
 }
 
-TEST_CASE("renameElement", "[Node, Node Graph]")
+TEST_CASE("renameElement with connections", "[Node, Node Graph]")
 {
     mx::DocumentPtr doc = mx::createDocument();
 
@@ -797,7 +797,6 @@ TEST_CASE("renameElement", "[Node, Node Graph]")
             mx::PortElementPtr downstreamOutput = parentGraph->addOutput("out", type);
             downstreamOutput->setNodeName(upstreamNode->getName());
 
-            REQUIRE(doc->validate());
             renameElement(upstreamNode, new_name, true);
             REQUIRE(upstreamNode->getName() == new_name);
             REQUIRE(downstreamOutput->getNodeName() == new_name);
@@ -812,11 +811,18 @@ TEST_CASE("renameElement", "[Node, Node Graph]")
                 mx::NodePtr downStreamNode = doc->addNode("downStreamNode");
                 mx::InputPtr downstreamInput = downStreamNode->addInput("in", type);
                 downstreamInput->setNodeName(upstreamNode->getName());
-
-                REQUIRE(doc->validate());
-                renameElement(upstreamNode, new_name, true);
-                REQUIRE(upstreamNode->getName() == new_name);
-                REQUIRE(downstreamInput->getNodeName() == new_name);
+                SECTION("Update references")
+                {
+                    renameElement(upstreamNode, new_name, true);
+                    REQUIRE(upstreamNode->getName() == new_name);
+                    REQUIRE(downstreamInput->getNodeName() == new_name);
+                }
+                SECTION("Do not update references")
+                {
+                    renameElement(upstreamNode, new_name, false);
+                    REQUIRE(upstreamNode->getName() == new_name);
+                    REQUIRE(downstreamInput->getNodeName() != new_name);
+                }
             }
             SECTION("Free Node -> NodeGraph input")
             {
@@ -827,7 +833,6 @@ TEST_CASE("renameElement", "[Node, Node Graph]")
                 mx::InputPtr downstreamInput = downstreamGraph->addInput("input", type);
                 downstreamInput->setNodeName(upstreamNode->getName());
 
-                REQUIRE(doc->validate());
                 renameElement(upstreamNode, new_name, true);
                 REQUIRE(upstreamNode->getName() == new_name);
                 REQUIRE(downstreamInput->getNodeName() == new_name);
@@ -853,7 +858,6 @@ TEST_CASE("renameElement", "[Node, Node Graph]")
             mx::OutputPtr downstreamOutput = functionalNodeGraph->getOutput(compoundNodeGraphOutput->getName());
             REQUIRE(downstreamOutput);
 
-            REQUIRE(doc->validate());
             renameElement(upstreamNode, new_name, true);
             REQUIRE(upstreamNode->getName() == new_name);
             REQUIRE(downstreamOutput->getNodeName() == new_name);
@@ -873,9 +877,6 @@ TEST_CASE("renameElement", "[Node, Node Graph]")
             downstreamInput->setNodeGraphString(upstreamGraph->getName());
             downstreamInput->setOutputString(upstreamGraphOutput->getName());
 
-            std::string message;
-            doc->validate(&message);
-            REQUIRE(message.empty());
             renameElement(upstreamGraph, new_name, true);
             REQUIRE(upstreamGraph->getName() == new_name);
             REQUIRE(downstreamInput->getNodeGraphString() == new_name);
@@ -887,7 +888,6 @@ TEST_CASE("renameElement", "[Node, Node Graph]")
             downstreamInput->setNodeGraphString(upstreamGraph->getName());
             downstreamInput->setOutputString(upstreamGraphOutput->getName());
 
-            REQUIRE(doc->validate());
             renameElement(upstreamGraph, new_name, true);
             REQUIRE(upstreamGraph->getName() == new_name);
             REQUIRE(downstreamInput->getNodeGraphString() == new_name);
@@ -895,7 +895,7 @@ TEST_CASE("renameElement", "[Node, Node Graph]")
     }
 }
 
-TEST_CASE("renameElement", "[Element]")
+TEST_CASE("renameElement with no connections", "[Element]")
 {
     mx::DocumentPtr doc = mx::createDocument();
     mx::ElementPtr child = doc->addMaterialNode("name1");
@@ -903,4 +903,7 @@ TEST_CASE("renameElement", "[Element]")
     renameElement(child, new_name, true);
     REQUIRE(doc->validate());
     REQUIRE(child->getName() == new_name);
+
+    renameElement(doc, new_name, true);
+    REQUIRE(doc->getName() == new_name);
 }
